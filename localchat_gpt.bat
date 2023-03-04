@@ -1,4 +1,7 @@
-@echo off
+IF NOT EXIST localgpt (
+    python -m venv localgpt
+)
+call localgpt\Scripts\activate.bat
 cd /d "%~dp0"
-pip install -r requirements.txt
-streamlit run app.py
+python -m pip install -r requirements.txt
+python -m streamlit run app.py
