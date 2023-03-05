@@ -3,10 +3,11 @@ import os
 import openai
 import streamlit as st
 from dotenv import load_dotenv
+from uuid import uuid4
 
 load_dotenv()
 
-
+sbcol1, sbcol2 = st.columns([5,1])
 
 BASE_PROMPT = [{"role": "system", "content": "You are a helpful assistant for Tanner Phillips. He's a Data Scientist, has a wife and two kids, and a PhD in education. Mainly you help him with work / personal coding projects, but he likes help with creative ideas too."}]
 DATA_FILE = "conversation.json"
@@ -21,7 +22,7 @@ def add_to_data_file(messages):
         data = []
 
     title = get_summary(messages)
-    data.append({"title": title, "messages": messages})
+    data.insert(0,{"id":uuid4(),"title": title, "messages": messages})
 
     with open(DATA_FILE, "w") as f:
         json.dump(data, f)
@@ -61,8 +62,10 @@ def show_saved_conversations():
     data = load_conversation_data()
     for conversation in data:
         title = conversation["title"]
-        st.sidebar.button(title, key=f"{title}_button", on_click=load_conversation, args=[conversation["messages"]])
-
+        with sbcol1:
+            st.sidebar.button(title, key=f"{title}_button", on_click=load_conversation, args=[conversation["messages"]])
+        with sbcol2:
+            st.sidebar.button("X", key = f'{title}')
 def load_conversation(messages):
     st.session_state["messages"] = messages
     show_messages(text)
