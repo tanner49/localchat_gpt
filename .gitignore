@@ -1,3 +1,4 @@
 .ENV
 localgpt/
 conversation.json
+readme.md

@@ -3,7 +3,6 @@ import os
 import openai
 import streamlit as st
 from dotenv import load_dotenv
-from uuid import uuid4
 
 load_dotenv()
 
@@ -22,7 +21,7 @@ def add_to_data_file(messages):
         data = []
 
     title = get_summary(messages)
-    data.insert(0,{"id":uuid4(),"title": title, "messages": messages})
+    data.insert(0,{"title": title, "messages": messages})
 
     with open(DATA_FILE, "w") as f:
         json.dump(data, f)
@@ -56,6 +55,16 @@ def load_conversation_data():
         return data
     else:
         return []
+    
+def delete_conversation(title):
+    with open(DATA_FILE, "r") as f:
+        data = json.load(f)
+    for i, conversation in enumerate(data):
+        if conversation["title"] == title:
+            del data[i]
+            break
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f)
 
 def show_saved_conversations():
     st.sidebar.markdown("## Saved Conversations")
@@ -65,7 +74,9 @@ def show_saved_conversations():
         with sbcol1:
             st.sidebar.button(title, key=f"{title}_button", on_click=load_conversation, args=[conversation["messages"]])
         with sbcol2:
-            st.sidebar.button("X", key = f'{title}')
+            if st.sidebar.button("X", key=f"{title}_delete"):
+                delete_conversation(title)
+
 def load_conversation(messages):
     st.session_state["messages"] = messages
     show_messages(text)
@@ -77,7 +88,7 @@ with st.sidebar:
 if "messages" not in st.session_state:
     st.session_state["messages"] = BASE_PROMPT
 
-st.header("STREAMLIT GPT-3 CHATBOT")
+st.header("STREAMLIT CHATGPT")
 
 text = st.empty()
 show_messages(text)
@@ -86,7 +97,7 @@ prompt = st.text_area("Enter Message", key="prompt_text")
 
 col1, col2, col3 = st.columns(3)
 with col1:
-    if st.button("Send"):
+    if st.button("Send", use_container_width=True):
         with st.spinner("Generating response..."):
             st.session_state["messages"] += [{"role": "user", "content": prompt}]
             response = openai.ChatCompletion.create(
@@ -98,10 +109,10 @@ with col1:
             ]
             show_messages(text)
 with col2:
-    if st.button("Save"):
+    if st.button("Save", use_container_width=True):
         add_to_data_file(st.session_state["messages"])
 
 with col3:
-    if st.button("Clear"):
+    if st.button("Clear", use_container_width=True):
         st.session_state["messages"] = BASE_PROMPT
         show_messages(text)
