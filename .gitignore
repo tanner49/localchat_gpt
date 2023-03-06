@@ -1,5 +1,3 @@
 .ENV
-conversation.json
+conversations.json
 localgpt/
-test.file
-test.file
